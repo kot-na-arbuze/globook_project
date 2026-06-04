@@ -1,6 +1,7 @@
 # globook_project
 Проект Globook предоставляет возможности бронирования отелей по всему земному шару.
-Название создание на основе слияния словосочетания Global Booking.
+Название является словосочетанием Global Booking.
+
 <img width="3000" height="800" alt="image" src="https://github.com/user-attachments/assets/378329ae-dd28-4c80-a70f-65d339a02f78" />
 
 
