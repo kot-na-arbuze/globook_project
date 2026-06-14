@@ -37,6 +37,7 @@
 2. Страница отеля;
 3. Форма бронирования;
 4. Панель учётной записи;
+5. Регистрация;
 
 Макет сайта:
 <img width="1086" height="770" alt="image" src="https://github.com/user-attachments/assets/430c169d-fc7a-467e-a0a3-7a6cde5ea7f8" />
