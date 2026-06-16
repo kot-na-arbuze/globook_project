@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../App';
 
-export default function BookingModal({ isOpen, onClose, user }) {
+export default function BookingModal({ isOpen, onClose, user, targetRoomId = "Вставьте_UUID_Комнаты_Сюда" }) {
   const [bookingData, setBookingData] = useState({
-    country: '', city: '', address: '', room: '',
-    checkIn: '', checkOut: '', guests: 1
+    checkIn: '', checkOut: ''
   });
   const [nights, setNights] = useState(0);
+  const [error, setError] = useState('');
   const pricePerNight = 4500;
 
   useEffect(() => {
     if (bookingData.checkIn && bookingData.checkOut) {
       const start = new Date(bookingData.checkIn);
       const end = new Date(bookingData.checkOut);
-      const diff = end - start;
-      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
       setNights(days > 0 ? days : 0);
     } else {
       setNights(0);
@@ -22,38 +22,52 @@ export default function BookingModal({ isOpen, onClose, user }) {
 
   if (!isOpen) return null;
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!user) {
+      setError('Вы должны войти в систему для бронирования номера!');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          booking: {
+            room_id: targetRoomId, // Передаем UUID комнаты на бэкенд
+            check_in_date: bookingData.checkIn,
+            check_out_date: bookingData.checkOut
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Заказ успешно оформлен на бэкенде!');
+        onClose();
+      } else {
+        setError(data.error || 'Ошибка при бронировании');
+      }
+    } catch (err) {
+      setError('Ошибка сети. Сервер недоступен.');
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-window" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close-btn" onClick={onClose}>&times;</button>
         <div className="modal-content">
           <h2>Оформление бронирования</h2>
-          <form onSubmit={(e) => { e.preventDefault(); alert('Заказ оформлен!'); onClose(); }}>
+          {error && <div style={{color: 'red', marginBottom: '10px'}}>{error}</div>}
+          
+          <form onSubmit={handleSubmit}>
             <div className="form-grid">
-              <div className="form-group">
-                <label>Страна</label>
-                <input type="text" placeholder="Например: Россия" list="modal-countries" required onChange={(e) => setBookingData({...bookingData, country: e.target.value})} />
-                <datalist id="modal-countries"><option value="Россия"/><option value="Франция"/></datalist>
-              </div>
-              <div className="form-group">
-                <label>Город</label>
-                <input type="text" placeholder="Москва" list="modal-cities" required onChange={(e) => setBookingData({...bookingData, city: e.target.value})} />
-                <datalist id="modal-cities"><option value="Москва"/><option value="Санкт-Петербург"/></datalist>
-              </div>
-              <div className="form-group max-width-row">
-                <label>Адрес отеля</label>
-                <input type="text" placeholder="Улица, дом" list="modal-addresses" required onChange={(e) => setBookingData({...bookingData, address: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Номер/Класс</label>
-                <input type="text" placeholder="Стандарт, Люкс..." list="modal-rooms" required onChange={(e) => setBookingData({...bookingData, room: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Количество гостей</label>
-                <select value={bookingData.guests} onChange={(e) => setBookingData({...bookingData, guests: Number(e.target.value)})}>
-                  {[...Array(10)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-                </select>
-              </div>
               <div className="form-group">
                 <label>Дата заезда</label>
                 <input type="date" required onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})} />
@@ -64,22 +78,19 @@ export default function BookingModal({ isOpen, onClose, user }) {
               </div>
               <div className="form-group">
                 <label>ФИО гостя</label>
-                <input type="text" value={user ? `${user.lastName} ${user.firstName}` : 'Не авторизован'} readOnly className="readonly-input" />
-              </div>
-              <div className="form-group">
-                <label>Телефон</label>
-                <input type="text" value={user ? user.phone : 'Не авторизован'} readOnly className="readonly-input" />
+                <input type="text" value={user ? user.fullName : 'Не авторизован'} readOnly className="readonly-input" />
               </div>
             </div>
 
             <div className="booking-summary-box">
-              <p>Длительность проживания: <strong>{nights} ночей</strong></p>
-              <p>Цена за ночь: <strong>{pricePerNight} ₽</strong></p>
+              <p>Длительность: <strong>{nights} ночей</strong></p>
               <hr />
               <p className="total-price">Итого: <span>{nights * pricePerNight} ₽</span></p>
             </div>
 
-            <button type="submit" className="btn btn-submit">Осуществить заказ</button>
+            <button type="submit" className="btn btn-submit" disabled={!user}>
+              Осуществить заказ
+            </button>
           </form>
         </div>
       </div>

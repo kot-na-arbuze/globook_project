@@ -1,67 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SearchFilters from '../components/SearchFilters';
 import HotelCard from '../components/HotelCard';
+import { API_BASE } from '../App';
 
-// Временные тестовые данные отелей для проверки отображения
-const mockHotels = [
-  {
-    id: 1,
-    name: 'Гранд Отель Бельведер',
-    country: 'Франция', city: 'Париж', address: 'Rue de Rivoli, 45',
-    description: 'Роскошный исторический отель в самом сердце Парижа с видом на Лувр и изысканной французской кухней.',
-    phone: '+33 1 42 96 10 00',
-    rating: 9.6,
-    availableRooms: 4,
-    photo: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=500'
-  },
-  {
-    id: 2,
-    name: 'Метрополь Премьер',
-    country: 'Россия', city: 'Москва', address: 'Театральный проезд, д. 2',
-    description: 'Легендарный отель с вековой историей, уникальной архитектурой модерна и шаговой доступностью до Красной площади.',
-    phone: '+7 (495) 225-88-88',
-    rating: 9.2,
-    availableRooms: 11,
-    photo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500'
-  },
-  {
-    id: 3,
-    name: 'Римский Колизей Резорт',
-    country: 'Италия', city: 'Рим', address: 'Via dei Fori Imperiali, 10',
-    description: 'Уютные номера в классическом итальянском стиле, оборудованные просторными террасами с панорамой древнего города.',
-    phone: '+39 06 699 1234',
-    rating: 8.9,
-    availableRooms: 7,
-    photo: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500'
-  }
-];
+export default function HotelSearch({ setActiveModal, user }) {
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-export default function HotelSearch() {
-  const [hotels, setHotels] = useState(mockHotels);
+  // При первой загрузке подтягиваем все доступные отели
+  useEffect(() => {
+    handleSearch({});
+  }, []);
 
-  const handleSearch = (searchFilters) => {
-    console.log('Вызваны фильтры поиска:', searchFilters);
-    // Тут в будущем будет fetch-запрос на ваш Rails бэкенд:
-    // fetch(`http://localhost:3000/hotels/search?country=${searchFilters.country}...`)
+  const handleSearch = async (searchFilters) => {
+    setLoading(true);
+    try {
+      // Превращаем объект фильтров фронтенда в GET-параметры для Rails
+      const queryParams = new URLSearchParams();
+      if (searchFilters.country) queryParams.append('country', searchFilters.country);
+      if (searchFilters.city) queryParams.append('city', searchFilters.city);
+      if (searchFilters.address) queryParams.append('address', searchFilters.address);
+      if (searchFilters.roomName) queryParams.append('room_name', searchFilters.roomName);
+      if (searchFilters.checkIn) queryParams.append('check_in', searchFilters.checkIn);
+      if (searchFilters.checkOut) queryParams.append('check_out', searchFilters.checkOut);
+      if (searchFilters.rating) queryParams.append('rating', searchFilters.rating);
+      if (searchFilters.roomType) queryParams.append('room_type', searchFilters.roomType);
+      if (searchFilters.priceFrom) queryParams.append('price_from', searchFilters.priceFrom);
+      if (searchFilters.priceTo) queryParams.append('price_to', searchFilters.priceTo);
+      
+      if (searchFilters.amenities && searchFilters.amenities.length > 0) {
+        searchFilters.amenities.forEach(a => queryParams.append('amenities[]', a));
+      }
+
+      const response = await fetch(`${API_BASE}/hotels/search?${queryParams.toString()}`);
+      const data = await response.json();
+      setHotels(data);
+    } catch (err) {
+      console.error('Ошибка поиска отелей:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="search-page-layout">
-      {/* Левая колонка — фильтры */}
       <aside className="search-sidebar">
         <SearchFilters onSearch={handleSearch} />
       </aside>
 
-      {/* Правая колонка — результаты поиска */}
       <section className="search-results-content">
         <div className="search-meta-info">
-          <h2>Найдено вариантов: {hotels.length}</h2>
+          <h2>{loading ? 'Поиск вариантов...' : `Найдено вариантов: ${hotels.length}`}</h2>
         </div>
 
-        {/* Сетка карточек: выводит строго по две карточки в строку */}
         <div className="hotels-grid-layout">
           {hotels.map(hotel => (
-            <HotelCard key={hotel.id} hotel={hotel} />
+            // Передаем пропсы для открытия модалки бронирования, если это нужно карточке отеля
+            <HotelCard key={hotel.id} hotel={hotel} setActiveModal={setActiveModal} user={user} />
           ))}
         </div>
       </section>
