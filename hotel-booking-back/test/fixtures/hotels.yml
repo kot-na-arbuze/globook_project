@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  manager: one
+  name: MyString
+  description: MyText
+  address: MyString
+  lat: 9.99
+  lng: 9.99
+
+two:
+  manager: two
+  name: MyString
+  description: MyText
+  address: MyString
+  lat: 9.99
+  lng: 9.99

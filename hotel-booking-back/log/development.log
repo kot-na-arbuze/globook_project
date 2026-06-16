@@ -12,3 +12,234 @@ Started GET "/icon.png" for 127.0.0.1 at 2026-06-04 18:30:40 +0300
   
 ActionController::RoutingError (No route matches [GET] "/icon.png"):
   
+  [1m[35mSQL (0.8ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35m (124.7ms)[0m  [1m[35mCREATE DATABASE "storage/development"."sqlite3" ENCODING = 'unicode' /*application='Projects'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35m (144.2ms)[0m  [1m[35mCREATE DATABASE "hotel_booking_development" ENCODING = 'unicode' /*application='Projects'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35m (169.2ms)[0m  [1m[35mCREATE DATABASE "hotel_booking_test" ENCODING = 'unicode' /*application='Projects'*/[0m
+  [1m[35m (11.6ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" character varying NOT NULL PRIMARY KEY) /*application='Projects'*/[0m
+  [1m[35m (7.0ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" character varying NOT NULL PRIMARY KEY, "value" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='Projects'*/[0m
+  [1m[35m (0.7ms)[0m  [1m[34mSELECT pg_try_advisory_lock(2007751681948843530) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.5ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Projects'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.7ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (1.7ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2026-06-14 12:05:03.641532', '2026-06-14 12:05:03.641535') RETURNING "key" /*application='Projects'*/[0m
+Migrating to CreateUsers (20260614120017)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35mSQL (8.4ms)[0m  [1m[35mCREATE EXTENSION IF NOT EXISTS "pgcrypto" /*application='Projects'*/[0m
+  [1m[35m (7.0ms)[0m  [1m[35mCREATE TABLE "users" ("id" uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY, "user_type" character varying, "name" character varying, "email" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.6ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260614120017') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+Migrating to CreateHotels (20260614120114)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35m (5.8ms)[0m  [1m[35mCREATE TABLE "hotels" ("id" uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY, "manager_id" uuid NOT NULL, "name" character varying, "description" text, "address" character varying, "lat" decimal(10,6), "lng" decimal(10,6), "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_837b2d6554"
+FOREIGN KEY ("manager_id")
+  REFERENCES "users" ("id")
+) /*application='Projects'*/[0m
+  [1m[35m (2.6ms)[0m  [1m[35mCREATE INDEX "index_hotels_on_manager_id" ON "hotels" ("manager_id") /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.3ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260614120114') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+Migrating to CreateRooms (20260614120119)
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35m (4.3ms)[0m  [1m[35mCREATE TABLE "rooms" ("id" uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY, "hotel_id" uuid NOT NULL, "room_number" character varying, "room_type" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_cae2c0f55d"
+FOREIGN KEY ("hotel_id")
+  REFERENCES "hotels" ("id")
+) /*application='Projects'*/[0m
+  [1m[35m (2.4ms)[0m  [1m[35mCREATE INDEX "index_rooms_on_hotel_id" ON "rooms" ("hotel_id") /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.3ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260614120119') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+Migrating to CreateBookings (20260614120122)
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35m (6.1ms)[0m  [1m[35mCREATE TABLE "bookings" ("id" uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY, "user_id" uuid NOT NULL, "hotel_id" uuid NOT NULL, "room_id" uuid NOT NULL, "status" character varying, "check_in_date" date, "check_out_date" date, "total_price" decimal(10,2), "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_ef0571f117"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_5779f034b0"
+FOREIGN KEY ("hotel_id")
+  REFERENCES "hotels" ("id")
+, CONSTRAINT "fk_rails_4fe21eabc6"
+FOREIGN KEY ("room_id")
+  REFERENCES "rooms" ("id")
+) /*application='Projects'*/[0m
+  [1m[35m (1.9ms)[0m  [1m[35mCREATE INDEX "index_bookings_on_user_id" ON "bookings" ("user_id") /*application='Projects'*/[0m
+  [1m[35m (1.9ms)[0m  [1m[35mCREATE INDEX "index_bookings_on_hotel_id" ON "bookings" ("hotel_id") /*application='Projects'*/[0m
+  [1m[35m (1.8ms)[0m  [1m[35mCREATE INDEX "index_bookings_on_room_id" ON "bookings" ("room_id") /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260614120122') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_advisory_unlock(2007751681948843530) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Projects'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO "$user", public /*application='Projects'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO "$user", public /*application='Projects'*/[0m
+  [1m[35m (0.9ms)[0m  [1m[34mSELECT pg_try_advisory_lock(2007751681948843530) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.9ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Projects'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (2.3ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Projects'*/[0m
+Migrating to CreateRoles (20260615131820)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35m (17.0ms)[0m  [1m[35mCREATE TABLE "roles" ("id" bigserial primary key, "name" character varying, "description" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.5ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260615131820') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (2.1ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+Migrating to CreatePermissions (20260615131825)
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35m (9.4ms)[0m  [1m[35mCREATE TABLE "permissions" ("id" bigserial primary key, "key" character varying, "description" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260615131825') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+Migrating to CreateRolePermissions (20260615131829)
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35m (9.2ms)[0m  [1m[35mCREATE TABLE "role_permissions" ("id" bigserial primary key, "role_id" bigint NOT NULL, "permission_id" bigint NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_60126080bd"
+FOREIGN KEY ("role_id")
+  REFERENCES "roles" ("id")
+, CONSTRAINT "fk_rails_439e640a3f"
+FOREIGN KEY ("permission_id")
+  REFERENCES "permissions" ("id")
+) /*application='Projects'*/[0m
+  [1m[35m (2.3ms)[0m  [1m[35mCREATE INDEX "index_role_permissions_on_role_id" ON "role_permissions" ("role_id") /*application='Projects'*/[0m
+  [1m[35m (2.1ms)[0m  [1m[35mCREATE INDEX "index_role_permissions_on_permission_id" ON "role_permissions" ("permission_id") /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.3ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260615131829') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+Migrating to AddRoleToUsers (20260615131931)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35m (1.3ms)[0m  [1m[35mALTER TABLE "users" ADD "role_id" bigint NOT NULL /*application='Projects'*/[0m
+  [1m[35m (3.4ms)[0m  [1m[35mCREATE INDEX "index_users_on_role_id" ON "users" ("role_id") /*application='Projects'*/[0m
+  [1m[35m (1.6ms)[0m  [1m[35mALTER TABLE "users" ADD CONSTRAINT "fk_rails_642f17018b"
+FOREIGN KEY ("role_id")
+  REFERENCES "roles" ("id")
+ /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.5ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260615131931') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_advisory_unlock(2007751681948843530) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Projects'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO "$user", public /*application='Projects'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO "$user", public /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Projects'*/[0m
+  [1m[36mPermission Load (1.0ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'create_role_type' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (2.0ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('create_role_type', 'Создание типов аккаунта', '2026-06-15 13:25:16.029402', '2026-06-15 13:25:16.029402') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.3ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'delete_role_type' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.4ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('delete_role_type', 'Удаление типов аккаунта', '2026-06-15 13:25:16.037829', '2026-06-15 13:25:16.037829') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'edit_role_permissions' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.9ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('edit_role_permissions', 'Изменение типа аккаунта (разрешений)', '2026-06-15 13:25:16.044178', '2026-06-15 13:25:16.044178') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'create_account' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (2.1ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('create_account', 'Создание аккаунта', '2026-06-15 13:25:16.052049', '2026-06-15 13:25:16.052049') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.4ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'delete_account' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.8ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('delete_account', 'Удаление аккаунта', '2026-06-15 13:25:16.059633', '2026-06-15 13:25:16.059633') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'edit_account_variables' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.9ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('edit_account_variables', 'Изменение переменных аккаунта', '2026-06-15 13:25:16.067674', '2026-06-15 13:25:16.067674') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'create_hotel' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.8ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('create_hotel', 'Создание отеля', '2026-06-15 13:25:16.074844', '2026-06-15 13:25:16.074844') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.5ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'delete_hotel' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.7ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('delete_hotel', 'Удаление отеля', '2026-06-15 13:25:16.083444', '2026-06-15 13:25:16.083444') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.5ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'create_room' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (2.3ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('create_room', 'Создание комнат', '2026-06-15 13:25:16.091006', '2026-06-15 13:25:16.091006') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'delete_room' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.8ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('delete_room', 'Удаление комнат', '2026-06-15 13:25:16.099780', '2026-06-15 13:25:16.099780') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.2ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'book_room' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (2.0ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('book_room', 'Бронирование комнат', '2026-06-15 13:25:16.107291', '2026-06-15 13:25:16.107291') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (2.4ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.5ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'create_hotels_bulk' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (2.3ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('create_hotels_bulk', 'Создание отелей', '2026-06-15 13:25:16.138296', '2026-06-15 13:25:16.138296') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'delete_hotels_bulk' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.1ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('delete_hotels_bulk', 'Удаление отелей', '2026-06-15 13:25:16.145408', '2026-06-15 13:25:16.145408') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.7ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.4ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'pay_booking' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.6ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('pay_booking', 'Оплата бронирования', '2026-06-15 13:25:16.153799', '2026-06-15 13:25:16.153799') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'edit_booking' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.3ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('edit_booking', 'Изменение бронирования', '2026-06-15 13:25:16.160734', '2026-06-15 13:25:16.160734') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.8ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'cancel_booking' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.8ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('cancel_booking', 'Отмена бронирования', '2026-06-15 13:25:16.169062', '2026-06-15 13:25:16.169062') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'view_directories' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.3ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('view_directories', 'Просмотр списка отелей/комнат/бронирований', '2026-06-15 13:25:16.175834', '2026-06-15 13:25:16.175834') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.4ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'refund_payment' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.9ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('refund_payment', 'Оформление возврата средств', '2026-06-15 13:25:16.183808', '2026-06-15 13:25:16.183808') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.3ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'moderate_reviews' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.7ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('moderate_reviews', 'Модерация отзывов и оценок', '2026-06-15 13:25:16.190860', '2026-06-15 13:25:16.190860') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (0.5ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" WHERE "permissions"."key" = 'view_personal_data' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mPermission Create (1.8ms)[0m  [1m[32mINSERT INTO "permissions" ("key", "description", "created_at", "updated_at") VALUES ('view_personal_data', 'Просмотр персональных данных', '2026-06-15 13:25:16.201595', '2026-06-15 13:25:16.201595') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mRole Load (0.4ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."name" = 'Супер-Администратор' LIMIT 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mRole Create (0.9ms)[0m  [1m[32mINSERT INTO "roles" ("name", "description", "created_at", "updated_at") VALUES ('Супер-Администратор', 'Обладает абсолютными первичными правами доступа ко всем модулям системы Globook.', '2026-06-15 13:25:16.216035', '2026-06-15 13:25:16.216035') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Load (1.2ms)[0m  [1m[34mSELECT "permissions".* FROM "permissions" INNER JOIN "role_permissions" ON "permissions"."id" = "role_permissions"."permission_id" WHERE "role_permissions"."role_id" = 1 /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (1.5ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 1, '2026-06-15 13:25:16.255035', '2026-06-15 13:25:16.255035') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.3ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 2, '2026-06-15 13:25:16.258409', '2026-06-15 13:25:16.258409') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.2ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 3, '2026-06-15 13:25:16.260068', '2026-06-15 13:25:16.260068') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.3ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 4, '2026-06-15 13:25:16.261727', '2026-06-15 13:25:16.261727') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.2ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 5, '2026-06-15 13:25:16.263394', '2026-06-15 13:25:16.263394') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.3ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 6, '2026-06-15 13:25:16.265117', '2026-06-15 13:25:16.265117') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.2ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 7, '2026-06-15 13:25:16.266684', '2026-06-15 13:25:16.266684') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.2ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 8, '2026-06-15 13:25:16.268229', '2026-06-15 13:25:16.268229') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.2ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 9, '2026-06-15 13:25:16.269956', '2026-06-15 13:25:16.269956') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.3ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 10, '2026-06-15 13:25:16.271591', '2026-06-15 13:25:16.271591') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.2ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 11, '2026-06-15 13:25:16.273327', '2026-06-15 13:25:16.273327') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.5ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 12, '2026-06-15 13:25:16.275222', '2026-06-15 13:25:16.275222') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.4ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 13, '2026-06-15 13:25:16.278127', '2026-06-15 13:25:16.278127') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.4ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 14, '2026-06-15 13:25:16.280863', '2026-06-15 13:25:16.280863') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.4ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 15, '2026-06-15 13:25:16.283584', '2026-06-15 13:25:16.283584') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.5ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 16, '2026-06-15 13:25:16.286944', '2026-06-15 13:25:16.286944') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.4ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 17, '2026-06-15 13:25:16.290041', '2026-06-15 13:25:16.290041') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.4ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 18, '2026-06-15 13:25:16.293243', '2026-06-15 13:25:16.293243') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.5ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 19, '2026-06-15 13:25:16.296006', '2026-06-15 13:25:16.296006') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mRolePermission Create (0.3ms)[0m  [1m[32mINSERT INTO "role_permissions" ("role_id", "permission_id", "created_at", "updated_at") VALUES (1, 20, '2026-06-15 13:25:16.298912', '2026-06-15 13:25:16.298912') RETURNING "id" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[36mPermission Count (1.7ms)[0m  [1m[34mSELECT COUNT(*) FROM "permissions" INNER JOIN "role_permissions" ON "permissions"."id" = "role_permissions"."permission_id" WHERE "role_permissions"."role_id" = 1 /*application='Projects'*/[0m
+  [1m[35m (0.8ms)[0m  [1m[34mSELECT pg_try_advisory_lock(2007751681948843530) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (2.4ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Projects'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (1.9ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='Projects'*/[0m
+Migrating to UpgradeTablesForFrontend (20260616171244)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='Projects'*/[0m
+  [1m[35m (10.5ms)[0m  [1m[35mALTER TABLE "hotels" ADD "city" character varying /*application='Projects'*/[0m
+  [1m[35m (0.8ms)[0m  [1m[35mALTER TABLE "hotels" ADD "phone" character varying /*application='Projects'*/[0m
+  [1m[35m (7.1ms)[0m  [1m[35mALTER TABLE "hotels" ADD "rating" decimal(3,1) DEFAULT 1.0 /*application='Projects'*/[0m
+  [1m[35m (1.3ms)[0m  [1m[35mALTER TABLE "users" RENAME COLUMN "name" TO "first_name" /*application='Projects'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mALTER TABLE "users" ADD "last_name" character varying /*application='Projects'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mALTER TABLE "users" ADD "patronymic" character varying /*application='Projects'*/[0m
+  [1m[35m (0.5ms)[0m  [1m[35mALTER TABLE "users" ADD "phone" character varying /*application='Projects'*/[0m
+  [1m[35m (0.5ms)[0m  [1m[35mALTER TABLE "users" ADD "password_digest" character varying /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (1.1ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260616171244') RETURNING "version" /*application='Projects'*/[0m
+  [1m[36mTRANSACTION (3.5ms)[0m  [1m[35mCOMMIT /*application='Projects'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_advisory_unlock(2007751681948843530) /*application='Projects'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Projects'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO "$user", public /*application='Projects'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO public /*application='Projects'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO "$user", public /*application='Projects'*/[0m

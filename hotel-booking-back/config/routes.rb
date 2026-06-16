@@ -1,10 +1,30 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  # Подключаем Devise для обработки сессий под капотом
+  devise_for :users, skip: [:sessions, :registrations, :passwords]
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  namespace :api do
+    namespace :v1 do
+      # Маршруты аутентификации сессий
+      post '/auth/register', to: 'authentication#register'
+      post '/auth/login',    to: 'authentication#login'
+      
+      # Эндпоинт профиля для страницы Личного Кабинета
+      get  '/account/profile', to: 'accounts#show'
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+      # Отели и поиск
+      resources :hotels, only: [:index, :show] do
+        collection do
+          get 'search' # /api/v1/hotels/search
+        end
+      end
+      
+      # Бронирования
+      resources :bookings, only: [:index, :create] do
+        member do
+          post 'cancel' # /api/v1/bookings/:id/cancel
+        end
+      end
+
+    end
+  end
 end
