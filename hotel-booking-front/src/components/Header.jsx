@@ -1,73 +1,58 @@
+// src/components/Header.jsx
 import React from 'react';
-import logo from '../assets/globook_logo_NEW_black.png';
 
-export default function Header({ 
-  currentPage, 
-  setCurrentPage, 
-  setActiveModal, 
-  user, 
-  onLogout 
-}) {
+export default function Header({ currentPage, setCurrentPage, setActiveModal, user, onLogout, openBooking }) {
   return (
     <header className="navbar-light">
       <div className="container header-container">
-        
-        {/* ЛЕВО: Логотип (клик ведет на Лендинг) */}
+
+        {/* ЛОГО */}
         <div className="navbar-left">
-          <a href="#landing" className="logo-link" onClick={() => setCurrentPage('landing')}>
-            <img src={logo} alt="Globook Logo" className="header-logo" />
+          <a className="logo-link" onClick={() => setCurrentPage('landing')} style={{ cursor: 'pointer' }}>
+            <span className="logo-text">🌍 Globook</span>
           </a>
         </div>
 
-        {/* ЦЕНТР: Постоянная навигация */}
+        {/* ЦЕНТР */}
         <div className="navbar-center">
-          <button 
+          <button
             className={`nav-btn ${currentPage === 'search' ? 'active-page' : ''}`}
             onClick={() => setCurrentPage('search')}
           >
             🔍 Поиск отелей
           </button>
-          <button 
-            className="nav-btn btn-dashed"
-            onClick={() => setActiveModal('booking')}
-          >
-            📅 Забронировать
-          </button>
+          {user && (
+            <button className="nav-btn btn-dashed" onClick={() => openBooking()}>
+              📅 Забронировать
+            </button>
+          )}
         </div>
 
-        {/* ПРАВО: Динамический блок авторизации */}
+        {/* ПРАВО */}
         <div className="navbar-right">
           {user ? (
-            /* Если ПОЛЬЗОВАТЕЛЬ ВОШЕЛ */
             <>
-              <button 
+              <button
                 className={`btn ${currentPage === 'bookings' ? 'active-page' : ''}`}
                 onClick={() => setCurrentPage('bookings')}
               >
                 🧳 Бронирования
               </button>
-              <button 
+              <button
                 className={`btn btn-accent ${currentPage === 'account' ? 'active-page' : ''}`}
                 onClick={() => setCurrentPage('account')}
               >
-                👤 Аккаунт ({user.firstName})
+                👤 {user.firstName}
               </button>
-              {/* Небольшая кнопка для демонстрации выхода */}
               <button className="btn-logout" onClick={onLogout} title="Выйти">🚪</button>
             </>
           ) : (
-            /* Если НЕ ВОШЕЛ (Гость) */
             <>
-              <button className="btn" onClick={() => setActiveModal('login')}>
-                Вход
-              </button>
-              <button className="btn btn-accent" onClick={() => setActiveModal('register')}>
-                Регистрация
-              </button>
+              <button className="btn" onClick={() => setActiveModal('login')}>Вход</button>
+              <button className="btn btn-accent" onClick={() => setActiveModal('register')}>Регистрация</button>
             </>
           )}
         </div>
-
       </div>
     </header>
   );

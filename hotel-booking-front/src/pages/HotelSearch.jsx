@@ -1,42 +1,38 @@
+// src/pages/HotelSearch.jsx
 import React, { useState, useEffect } from 'react';
 import SearchFilters from '../components/SearchFilters';
-import HotelCard from '../components/HotelCard';
 import { API_BASE } from '../App';
 
-export default function HotelSearch({ setActiveModal, user }) {
+const ROOM_TYPE_LABELS = { single: 'Одноместный', double: 'Двухместный', suite: 'Люкс' };
+
+export default function HotelSearch({ user, openBooking, navigateTo }) {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // При первой загрузке подтягиваем все доступные отели
-  useEffect(() => {
-    handleSearch({});
-  }, []);
+  useEffect(() => { handleSearch({}); }, []);
 
   const handleSearch = async (searchFilters) => {
     setLoading(true);
     try {
-      // Превращаем объект фильтров фронтенда в GET-параметры для Rails
-      const queryParams = new URLSearchParams();
-      if (searchFilters.country) queryParams.append('country', searchFilters.country);
-      if (searchFilters.city) queryParams.append('city', searchFilters.city);
-      if (searchFilters.address) queryParams.append('address', searchFilters.address);
-      if (searchFilters.roomName) queryParams.append('room_name', searchFilters.roomName);
-      if (searchFilters.checkIn) queryParams.append('check_in', searchFilters.checkIn);
-      if (searchFilters.checkOut) queryParams.append('check_out', searchFilters.checkOut);
-      if (searchFilters.rating) queryParams.append('rating', searchFilters.rating);
-      if (searchFilters.roomType) queryParams.append('room_type', searchFilters.roomType);
-      if (searchFilters.priceFrom) queryParams.append('price_from', searchFilters.priceFrom);
-      if (searchFilters.priceTo) queryParams.append('price_to', searchFilters.priceTo);
-      
-      if (searchFilters.amenities && searchFilters.amenities.length > 0) {
-        searchFilters.amenities.forEach(a => queryParams.append('amenities[]', a));
+      const q = new URLSearchParams();
+      if (searchFilters.country)   q.append('country', searchFilters.country);
+      if (searchFilters.city)      q.append('city', searchFilters.city);
+      if (searchFilters.address)   q.append('address', searchFilters.address);
+      if (searchFilters.roomName)  q.append('room_name', searchFilters.roomName);
+      if (searchFilters.checkIn)   q.append('check_in', searchFilters.checkIn);
+      if (searchFilters.checkOut)  q.append('check_out', searchFilters.checkOut);
+      if (searchFilters.rating)    q.append('rating', searchFilters.rating);
+      if (searchFilters.roomType)  q.append('room_type', searchFilters.roomType);
+      if (searchFilters.priceFrom) q.append('price_from', searchFilters.priceFrom);
+      if (searchFilters.priceTo)   q.append('price_to', searchFilters.priceTo);
+      if (searchFilters.amenities?.length > 0) {
+        searchFilters.amenities.forEach(a => q.append('amenities[]', a));
       }
-
-      const response = await fetch(`${API_BASE}/hotels/search?${queryParams.toString()}`);
-      const data = await response.json();
+      const res = await fetch(`${API_BASE}/hotels/search?${q.toString()}`);
+      const data = await res.json();
       setHotels(data);
     } catch (err) {
-      console.error('Ошибка поиска отелей:', err);
+      console.error('Ошибка поиска:', err);
     } finally {
       setLoading(false);
     }
@@ -47,19 +43,67 @@ export default function HotelSearch({ setActiveModal, user }) {
       <aside className="search-sidebar">
         <SearchFilters onSearch={handleSearch} />
       </aside>
-
       <section className="search-results-content">
         <div className="search-meta-info">
-          <h2>{loading ? 'Поиск вариантов...' : `Найдено вариантов: ${hotels.length}`}</h2>
+          <h2>{loading ? 'Ищем варианты...' : `Найдено: ${hotels.length} отелей`}</h2>
         </div>
-
-        <div className="hotels-grid-layout">
-          {hotels.map(hotel => (
-            // Передаем пропсы для открытия модалки бронирования, если это нужно карточке отеля
-            <HotelCard key={hotel.id} hotel={hotel} setActiveModal={setActiveModal} user={user} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="loading-grid">
+            {[1, 2, 3].map(i => <div key={i} className="hotel-card-skeleton animate-pulse" />)}
+          </div>
+        ) : (
+          <div className="hotels-list">
+            {hotels.map(hotel => (
+              <HotelCard
+                key={hotel.id}
+                hotel={hotel}
+                onOpenPage={() => navigateTo('hotel', hotel)}
+                onBookRoom={() => openBooking(null, hotel)}
+                user={user}
+              />
+            ))}
+            {hotels.length === 0 && (
+              <div className="no-results">
+                <p>🔍 Ничего не найдено. Попробуйте изменить фильтры.</p>
+              </div>
+            )}
+          </div>
+        )}
       </section>
+    </div>
+  );
+}
+
+function HotelCard({ hotel, onOpenPage, onBookRoom, user }) {
+  return (
+    <div className="hotel-card animate-fade">
+      <div className="hotel-badge-rating">⭐ {hotel.rating?.toFixed(1)}</div>
+      <div className="hotel-card-image-box" onClick={onOpenPage} style={{ cursor: 'pointer' }}>
+        <img src={hotel.photo} alt={hotel.name} />
+      </div>
+      <div className="hotel-card-info">
+        <div className="hotel-main-details">
+          <h3 className="hotel-title-name" onClick={onOpenPage} style={{ cursor: 'pointer' }}>
+            {hotel.name}
+          </h3>
+          <p className="hotel-geo-location">📍 {hotel.country}, {hotel.city}, {hotel.address}</p>
+          <p className="hotel-short-description">{hotel.description}</p>
+          <p className="hotel-phone-number">📞 <span>{hotel.phone}</span></p>
+        </div>
+        <div className="hotel-card-bottom-bar">
+          <div className="available-rooms-count">
+            Доступно номеров: <strong>{hotel.availableRooms}</strong>
+          </div>
+          <div className="hotel-card-actions">
+            <button className="btn btn-ghost" onClick={onOpenPage}>
+              Подробнее
+            </button>
+            <button className="btn btn-accent btn-show-rooms" onClick={onBookRoom}>
+              Забронировать
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

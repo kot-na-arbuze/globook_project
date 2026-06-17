@@ -1,104 +1,213 @@
+// src/pages/BookingsList.jsx
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../App';
 
-export default function BookingsList({ setCurrentPage }) {
+const STATUS_COLORS = {
+  'Ожидает подтверждения': 'status-pending',
+  'Подтверждено': 'status-confirmed',
+  'Оплачено': 'status-paid',
+  'Отменено': 'status-cancelled',
+  'Завершено': 'status-done',
+};
+
+export default function BookingsList({ setCurrentPage, user }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [payingId, setPayingId] = useState(null);
+  const [payModal, setPayModal] = useState(null); // booking object
+
+  // Менеджеры видят все бронирования
+  const isManager = user?.permissions?.includes('view_all_bookings');
 
   const fetchBookings = () => {
     setLoading(true);
-    fetch(`${API_BASE}/bookings`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setBookings(data))
-      .catch(err => console.error('Ошибка загрузки бронирований:', err))
+    const endpoint = isManager ? `${API_BASE}/bookings/all` : `${API_BASE}/bookings`;
+    fetch(endpoint, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => setBookings(Array.isArray(data) ? data : []))
+      .catch(err => console.error(err))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const calculateNights = (inDate, outDate) => {
-    const start = new Date(inDate);
-    const end = new Date(outDate);
-    return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) || 0;
-  };
+  useEffect(() => { fetchBookings(); }, []);
 
   const handleCancel = async (id) => {
-    if (window.confirm('Вы уверены, что хотите отменить это бронирование?')) {
-      try {
-        const response = await fetch(`${API_BASE}/bookings/${id}/cancel`, {
-          method: 'POST',
-          credentials: 'include'
-        });
-        if (response.ok) {
-          alert('Бронирование успешно отменено!');
-          fetchBookings(); // Перезагружаем актуальный список с сервера
-        } else {
-          const data = await response.json();
-          alert(data.error || 'Не удалось отменить бронирование');
-        }
-      } catch (err) {
-        alert('Ошибка соединения с сервером');
-      }
+    if (!window.confirm('Отменить бронирование?')) return;
+    const res = await fetch(`${API_BASE}/bookings/${id}/cancel`, {
+      method: 'POST', credentials: 'include'
+    });
+    if (res.ok) { fetchBookings(); }
+    else {
+      const d = await res.json();
+      alert(d.error || 'Не удалось отменить');
     }
   };
 
-  if (loading) return <div style={{padding: '50px', textAlign: 'center'}}>Загрузка ваших бронирований...</div>;
+  const handleConfirm = async (id) => {
+    const res = await fetch(`${API_BASE}/bookings/${id}/confirm`, {
+      method: 'POST', credentials: 'include'
+    });
+    if (res.ok) { fetchBookings(); }
+  };
+
+  const handlePay = async (booking, method) => {
+    setPayingId(booking.id);
+    const res = await fetch(`${API_BASE}/bookings/${booking.id}/pay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ payment_method: method })
+    });
+    const data = await res.json();
+    setPayingId(null);
+    setPayModal(null);
+    if (res.ok) { fetchBookings(); alert('Оплата прошла успешно! ✅'); }
+    else { alert(data.error || 'Ошибка оплаты'); }
+  };
+
+  const calculateNights = (inDate, outDate) => {
+    return Math.max(0, Math.ceil((new Date(outDate) - new Date(inDate)) / 86400000));
+  };
+
+  if (loading) return <div className="loading-page">Загрузка бронирований...</div>;
 
   return (
     <div className="bookings-page-container">
-      <h1 className="page-main-title">Мои бронирования</h1>
+      <div className="page-header">
+        <h1 className="page-main-title">
+          {isManager ? '📋 Все бронирования' : '🧳 Мои бронирования'}
+        </h1>
+        {isManager && (
+          <div className="manager-stats">
+            <span>Всего: <strong>{bookings.length}</strong></span>
+            <span>Ожидают: <strong>{bookings.filter(b => b.status === 'Ожидает подтверждения').length}</strong></span>
+            <span>Оплачено: <strong>{bookings.filter(b => b.status === 'Оплачено').length}</strong></span>
+          </div>
+        )}
+      </div>
 
       {bookings.length === 0 ? (
         <div className="empty-bookings-box animate-fade">
-          <p>Никаких номеров не забронировано</p>
-          <button className="btn btn-search-trigger" onClick={() => setCurrentPage('search')}>
+          <div className="empty-icon">🏨</div>
+          <p>Бронирований пока нет</p>
+          <button className="btn btn-accent" onClick={() => setCurrentPage('search')}>
             🔍 Найти отели
           </button>
         </div>
       ) : (
         <div className="bookings-list-grid">
-          {bookings.map((booking) => {
+          {bookings.map(booking => {
             const nights = calculateNights(booking.checkIn, booking.checkOut);
-            const totalCost = nights * booking.pricePerNight;
+            const canPay = booking.status !== 'Оплачено' && booking.status !== 'Отменено' && booking.status !== 'Завершено';
+            const canCancel = booking.status !== 'Отменено' && booking.status !== 'Завершено';
 
             return (
               <div key={booking.id} className="booking-three-parts-card animate-fade">
+                {/* ЛЕВАЯ ЧАСТЬ — отель */}
                 <div className="card-part-left">
-                  <div className="booking-hotel-badge-rating">⭐ {booking.rating}</div>
-                  <div className="booking-hotel-image-wrapper"><img src={booking.photo} alt={booking.hotelName} /></div>
+                  <div className="booking-hotel-badge-rating">⭐ {booking.rating?.toFixed(1)}</div>
+                  <div className="booking-hotel-image-wrapper">
+                    <img src={booking.photo} alt={booking.hotelName} />
+                  </div>
                   <div className="booking-hotel-info-block">
                     <h3 className="b-hotel-title">{booking.hotelName}</h3>
-                    <p className="b-hotel-geo">📍 {booking.country}, {booking.city}, {booking.address}</p>
-                    <p className="b-hotel-desc">{booking.description}</p>
+                    <p className="b-hotel-geo">📍 {booking.country}, {booking.city}</p>
+                    <p className="b-hotel-geo">{booking.address}</p>
                     <p className="b-hotel-phone">📞 {booking.phone}</p>
                   </div>
+                  {isManager && booking.user && (
+                    <div className="booking-user-tag">👤 {booking.user.fullName}</div>
+                  )}
                 </div>
 
+                {/* ЦЕНТРАЛЬНАЯ ЧАСТЬ — детали */}
                 <div className="card-part-center">
-                  <h4>🛏️ Параметры размещения</h4>
+                  <h4>🛏️ Размещение</h4>
                   <div className="room-spec-item"><span className="spec-label">Номер:</span><span className="spec-value font-highlight">{booking.roomName}</span></div>
-                  <div className="room-spec-item"><span className="spec-label">Кол-во гостей:</span><span className="spec-value">{booking.guestsCount} чел.</span></div>
+                  <div className="room-spec-item"><span className="spec-label">Гостей:</span><span className="spec-value">{booking.guestsCount} чел.</span></div>
                   <div className="room-spec-item"><span className="spec-label">Заезд:</span><span className="spec-value">{new Date(booking.checkIn).toLocaleDateString('ru-RU')}</span></div>
                   <div className="room-spec-item"><span className="spec-label">Выезд:</span><span className="spec-value">{new Date(booking.checkOut).toLocaleDateString('ru-RU')}</span></div>
+                  <div className="room-spec-item"><span className="spec-label">Ночей:</span><span className="spec-value">{nights}</span></div>
+                  {booking.specialRequests && (
+                    <div className="room-spec-item"><span className="spec-label">Пожелания:</span><span className="spec-value">{booking.specialRequests}</span></div>
+                  )}
                 </div>
 
+                {/* ПРАВАЯ ЧАСТЬ — финансы и действия */}
                 <div className="card-part-right">
                   <div className="financials-block">
-                    <div className="b-total-cost">{totalCost.toLocaleString('ru-RU')} ₽</div>
-                    <div className="b-sub-price">Плата за ночь: {booking.pricePerNight} ₽</div>
+                    <div className="b-total-cost">{booking.totalPrice?.toLocaleString('ru-RU')} ₽</div>
+                    <div className="b-sub-price">{booking.pricePerNight?.toLocaleString('ru-RU')} ₽ / ночь</div>
+                    {booking.paidAt && (
+                      <div className="b-paid-at">Оплачено: {new Date(booking.paidAt).toLocaleDateString('ru-RU')}</div>
+                    )}
                   </div>
-                  <div className={`booking-status-badge status-${booking.status === 'Отменено' ? 'danger' : 'success'}`}>
+
+                  <div className={`booking-status-badge ${STATUS_COLORS[booking.status] || ''}`}>
                     {booking.status}
                   </div>
-                  {booking.status !== 'Отменено' && (
-                    <button className="btn btn-danger-action" onClick={() => handleCancel(booking.id)}>Отменить бронь</button>
-                  )}
+
+                  <div className="booking-actions">
+                    {/* Оплата (клиент, не оплачено) */}
+                    {canPay && user?.permissions?.includes('pay_booking') && (
+                      <button
+                        className="btn btn-pay"
+                        onClick={() => setPayModal(booking)}
+                        disabled={payingId === booking.id}
+                      >
+                        💳 Оплатить
+                      </button>
+                    )}
+
+                    {/* Подтверждение (менеджер) */}
+                    {isManager && booking.status === 'Ожидает подтверждения' && (
+                      <button className="btn btn-confirm" onClick={() => handleConfirm(booking.id)}>
+                        ✅ Подтвердить
+                      </button>
+                    )}
+
+                    {/* Отмена */}
+                    {canCancel && (
+                      <button className="btn btn-danger-action" onClick={() => handleCancel(booking.id)}>
+                        Отменить
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* МОДАЛ ОПЛАТЫ */}
+      {payModal && (
+        <div className="modal-overlay" onClick={() => setPayModal(null)}>
+          <div className="modal-window modal-pay" onClick={e => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => setPayModal(null)}>&times;</button>
+            <div className="modal-content">
+              <h2>Оплата бронирования</h2>
+              <div className="pay-summary">
+                <p><strong>{payModal.hotelName}</strong></p>
+                <p>{payModal.roomName}</p>
+                <p>{new Date(payModal.checkIn).toLocaleDateString('ru-RU')} — {new Date(payModal.checkOut).toLocaleDateString('ru-RU')}</p>
+                <div className="pay-total">{payModal.totalPrice?.toLocaleString('ru-RU')} ₽</div>
+              </div>
+              <h4>Выберите способ оплаты:</h4>
+              <div className="pay-methods">
+                <button className="btn btn-pay-method" onClick={() => handlePay(payModal, 'card')} disabled={!!payingId}>
+                  💳 Банковская карта
+                </button>
+                <button className="btn btn-pay-method" onClick={() => handlePay(payModal, 'sbp')} disabled={!!payingId}>
+                  📱 СБП
+                </button>
+                <button className="btn btn-pay-method" onClick={() => handlePay(payModal, 'cash')} disabled={!!payingId}>
+                  💵 Наличные при заезде
+                </button>
+              </div>
+              {payingId && <div className="loading-msg">Проводим оплату...</div>}
+            </div>
+          </div>
         </div>
       )}
     </div>
