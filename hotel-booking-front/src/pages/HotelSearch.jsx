@@ -1,9 +1,8 @@
 // src/pages/HotelSearch.jsx
 import React, { useState, useEffect } from 'react';
 import SearchFilters from '../components/SearchFilters';
+import HotelCard from '../components/HotelCard';
 import { API_BASE } from '../App';
-
-const ROOM_TYPE_LABELS = { single: 'Одноместный', double: 'Двухместный', suite: 'Люкс' };
 
 export default function HotelSearch({ user, openBooking, navigateTo }) {
   const [hotels, setHotels] = useState([]);
@@ -15,22 +14,22 @@ export default function HotelSearch({ user, openBooking, navigateTo }) {
     setLoading(true);
     try {
       const q = new URLSearchParams();
-      if (searchFilters.country)   q.append('country', searchFilters.country);
-      if (searchFilters.city)      q.append('city', searchFilters.city);
-      if (searchFilters.address)   q.append('address', searchFilters.address);
-      if (searchFilters.roomName)  q.append('room_name', searchFilters.roomName);
-      if (searchFilters.checkIn)   q.append('check_in', searchFilters.checkIn);
-      if (searchFilters.checkOut)  q.append('check_out', searchFilters.checkOut);
-      if (searchFilters.rating)    q.append('rating', searchFilters.rating);
-      if (searchFilters.roomType)  q.append('room_type', searchFilters.roomType);
+      if (searchFilters.country) q.append('country', searchFilters.country);
+      if (searchFilters.city) q.append('city', searchFilters.city);
+      if (searchFilters.address) q.append('address', searchFilters.address);
+      if (searchFilters.roomName) q.append('room_name', searchFilters.roomName);
+      if (searchFilters.checkIn) q.append('check_in', searchFilters.checkIn);
+      if (searchFilters.checkOut) q.append('check_out', searchFilters.checkOut);
+      if (searchFilters.rating) q.append('rating', searchFilters.rating);
+      if (searchFilters.roomType) q.append('room_type', searchFilters.roomType);
       if (searchFilters.priceFrom) q.append('price_from', searchFilters.priceFrom);
-      if (searchFilters.priceTo)   q.append('price_to', searchFilters.priceTo);
+      if (searchFilters.priceTo) q.append('price_to', searchFilters.priceTo);
       if (searchFilters.amenities?.length > 0) {
         searchFilters.amenities.forEach(a => q.append('amenities[]', a));
       }
       const res = await fetch(`${API_BASE}/hotels/search?${q.toString()}`);
       const data = await res.json();
-      setHotels(data);
+      setHotels(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Ошибка поиска:', err);
     } finally {
@@ -59,7 +58,6 @@ export default function HotelSearch({ user, openBooking, navigateTo }) {
                 hotel={hotel}
                 onOpenPage={() => navigateTo('hotel', hotel)}
                 onBookRoom={() => openBooking(null, hotel)}
-                user={user}
               />
             ))}
             {hotels.length === 0 && (
@@ -70,40 +68,6 @@ export default function HotelSearch({ user, openBooking, navigateTo }) {
           </div>
         )}
       </section>
-    </div>
-  );
-}
-
-function HotelCard({ hotel, onOpenPage, onBookRoom, user }) {
-  return (
-    <div className="hotel-card animate-fade">
-      <div className="hotel-badge-rating">⭐ {hotel.rating?.toFixed(1)}</div>
-      <div className="hotel-card-image-box" onClick={onOpenPage} style={{ cursor: 'pointer' }}>
-        <img src={hotel.photo} alt={hotel.name} />
-      </div>
-      <div className="hotel-card-info">
-        <div className="hotel-main-details">
-          <h3 className="hotel-title-name" onClick={onOpenPage} style={{ cursor: 'pointer' }}>
-            {hotel.name}
-          </h3>
-          <p className="hotel-geo-location">📍 {hotel.country}, {hotel.city}, {hotel.address}</p>
-          <p className="hotel-short-description">{hotel.description}</p>
-          <p className="hotel-phone-number">📞 <span>{hotel.phone}</span></p>
-        </div>
-        <div className="hotel-card-bottom-bar">
-          <div className="available-rooms-count">
-            Доступно номеров: <strong>{hotel.availableRooms}</strong>
-          </div>
-          <div className="hotel-card-actions">
-            <button className="btn btn-ghost" onClick={onOpenPage}>
-              Подробнее
-            </button>
-            <button className="btn btn-accent btn-show-rooms" onClick={onBookRoom}>
-              Забронировать
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

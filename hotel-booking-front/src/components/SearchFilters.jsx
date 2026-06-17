@@ -28,40 +28,40 @@ export default function SearchFilters({ onSearch }) {
     <div className="filter-panel">
       <h3>Фильтры поиска</h3>
       <form onSubmit={handleSubmit}>
-        
+
         <div className="filter-section">
           <h4>📍 Местоположение и номер</h4>
           <div className="filter-group">
             <label>Страна</label>
-            <input type="text" placeholder="Россия" value={filters.country} onChange={e => setFilters({...filters, country: e.target.value})} />
+            <input type="text" placeholder="Россия" value={filters.country} onChange={e => setFilters({ ...filters, country: e.target.value })} />
           </div>
           <div className="filter-group">
             <label>Город</label>
-            <input type="text" placeholder="Москва" value={filters.city} onChange={e => setFilters({...filters, city: e.target.value})} />
+            <input type="text" placeholder="Москва" value={filters.city} onChange={e => setFilters({ ...filters, city: e.target.value })} />
           </div>
           <div className="filter-group">
             <label>Адрес</label>
-            <input type="text" placeholder="Улица, дом" value={filters.address} onChange={e => setFilters({...filters, address: e.target.value})} />
+            <input type="text" placeholder="Улица, дом" value={filters.address} onChange={e => setFilters({ ...filters, address: e.target.value })} />
           </div>
           <div className="filter-group">
-            <label>Название / № Номера</label>
-            <input type="text" placeholder="204 или Люкс" value={filters.roomName} onChange={e => setFilters({...filters, roomName: e.target.value})} />
+            <label>Название / № номера</label>
+            <input type="text" placeholder="204 или Люкс" value={filters.roomName} onChange={e => setFilters({ ...filters, roomName: e.target.value })} />
           </div>
         </div>
 
         <div className="filter-section">
-          <h4>📅 Даты и Рейтинг</h4>
+          <h4>📅 Даты и рейтинг</h4>
           <div className="filter-group">
             <label>Заезд</label>
-            <input type="date" value={filters.checkIn} onChange={e => setFilters({...filters, checkIn: e.target.value})} />
+            <input type="date" value={filters.checkIn} onChange={e => setFilters({ ...filters, checkIn: e.target.value })} />
           </div>
           <div className="filter-group">
             <label>Выезд</label>
-            <input type="date" value={filters.checkOut} onChange={e => setFilters({...filters, checkOut: e.target.value})} />
+            <input type="date" value={filters.checkOut} onChange={e => setFilters({ ...filters, checkOut: e.target.value })} />
           </div>
           <div className="filter-group">
-            <label>Минимальный рейтинг ({filters.rating || '1.0'})</label>
-            <input type="range" min="1" max="10" step="0.1" value={filters.rating || 1} onChange={e => setFilters({...filters, rating: parseFloat(e.target.value)})} />
+            <label>Минимальный рейтинг ({(filters.rating || 1).toFixed ? (filters.rating || 1).toFixed(1) : filters.rating || '1.0'})</label>
+            <input type="range" min="1" max="10" step="0.1" value={filters.rating || 1} onChange={e => setFilters({ ...filters, rating: parseFloat(e.target.value) })} />
           </div>
         </div>
 
@@ -69,7 +69,7 @@ export default function SearchFilters({ onSearch }) {
           <h4>🏨 Параметры номера</h4>
           <div className="filter-group">
             <label>Тип номера</label>
-            <select value={filters.roomType} onChange={e => setFilters({...filters, roomType: e.target.value})}>
+            <select value={filters.roomType} onChange={e => setFilters({ ...filters, roomType: e.target.value })}>
               <option value="">Любой</option>
               <option value="single">Одноместный</option>
               <option value="double">Двухместный</option>
@@ -79,8 +79,8 @@ export default function SearchFilters({ onSearch }) {
           <div className="filter-group price-range">
             <label>Цена (₽)</label>
             <div className="price-inputs">
-              <input type="number" placeholder="от" value={filters.priceFrom} onChange={e => setFilters({...filters, priceFrom: e.target.value})} />
-              <input type="number" placeholder="до" value={filters.priceTo} onChange={e => setFilters({...filters, priceTo: e.target.value})} />
+              <input type="number" placeholder="от" value={filters.priceFrom} onChange={e => setFilters({ ...filters, priceFrom: e.target.value })} />
+              <input type="number" placeholder="до" value={filters.priceTo} onChange={e => setFilters({ ...filters, priceTo: e.target.value })} />
             </div>
           </div>
         </div>

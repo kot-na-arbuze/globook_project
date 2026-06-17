@@ -89,7 +89,7 @@ export default function BookingsList({ setCurrentPage, user }) {
       {bookings.length === 0 ? (
         <div className="empty-bookings-box animate-fade">
           <div className="empty-icon">🏨</div>
-          <p>Бронирований пока нет</p>
+          <p>Никаких номеров не забронировано</p>
           <button className="btn btn-accent" onClick={() => setCurrentPage('search')}>
             🔍 Найти отели
           </button>
@@ -127,7 +127,7 @@ export default function BookingsList({ setCurrentPage, user }) {
                   <div className="room-spec-item"><span className="spec-label">Гостей:</span><span className="spec-value">{booking.guestsCount} чел.</span></div>
                   <div className="room-spec-item"><span className="spec-label">Заезд:</span><span className="spec-value">{new Date(booking.checkIn).toLocaleDateString('ru-RU')}</span></div>
                   <div className="room-spec-item"><span className="spec-label">Выезд:</span><span className="spec-value">{new Date(booking.checkOut).toLocaleDateString('ru-RU')}</span></div>
-                  <div className="room-spec-item"><span className="spec-label">Ночей:</span><span className="spec-value">{nights}</span></div>
+                  <div className="room-spec-item"><span className="spec-label">Длительность:</span><span className="spec-value">{nights} ночей</span></div>
                   {booking.specialRequests && (
                     <div className="room-spec-item"><span className="spec-label">Пожелания:</span><span className="spec-value">{booking.specialRequests}</span></div>
                   )}
@@ -137,7 +137,7 @@ export default function BookingsList({ setCurrentPage, user }) {
                 <div className="card-part-right">
                   <div className="financials-block">
                     <div className="b-total-cost">{booking.totalPrice?.toLocaleString('ru-RU')} ₽</div>
-                    <div className="b-sub-price">{booking.pricePerNight?.toLocaleString('ru-RU')} ₽ / ночь</div>
+                    <div className="b-sub-price">{booking.pricePerNight?.toLocaleString('ru-RU')} ₽ / ночь · {nights} ночей</div>
                     {booking.paidAt && (
                       <div className="b-paid-at">Оплачено: {new Date(booking.paidAt).toLocaleDateString('ru-RU')}</div>
                     )}

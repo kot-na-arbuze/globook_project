@@ -1,3 +1,4 @@
+// src/components/modals/RecoverModal.jsx
 import React, { useState } from 'react';
 
 export default function RecoverModal({ isOpen, onClose }) {
@@ -20,7 +21,7 @@ export default function RecoverModal({ isOpen, onClose }) {
 
           {stage === 1 && (
             <form onSubmit={(e) => { e.preventDefault(); setStage(2); }}>
-              <p className="step-desc">Введите ваш Email, на него мы отправим секретный проверочный код.</p>
+              <p className="step-desc">Введите ваш email — на него мы отправим проверочный код.</p>
               <div className="form-group">
                 <label>Email</label>
                 <input type="email" placeholder="your@email.com" required />
@@ -33,16 +34,16 @@ export default function RecoverModal({ isOpen, onClose }) {
             <form onSubmit={(e) => { e.preventDefault(); setStage(3); }}>
               <p className="step-desc">Мы отправили код подтверждения. Введите его ниже:</p>
               <div className="form-group">
-                <label>Кодинг из письма</label>
-                <input type="text" placeholder="6-значный код" maxLength="6" style={{textAlign: 'center', letterSpacing: '4px', fontSize: '20px'}} required />
+                <label>Код из письма</label>
+                <input type="text" placeholder="6-значный код" maxLength="6" style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '20px' }} required />
               </div>
               <button type="submit" className="btn btn-submit">Проверить код</button>
             </form>
           )}
 
           {stage === 3 && (
-            <form onSubmit={(e) => { e.preventDefault(); alert('Пароль изменен!'); handleClose(); }}>
-              <p className="step-desc">Придумайте новый сложный пароль для вашей учетной записи.</p>
+            <form onSubmit={(e) => { e.preventDefault(); alert('Пароль изменён!'); handleClose(); }}>
+              <p className="step-desc">Придумайте новый надёжный пароль для вашей учётной записи.</p>
               <div className="form-group">
                 <label>Новый пароль</label>
                 <input type="password" placeholder="••••••••" required />

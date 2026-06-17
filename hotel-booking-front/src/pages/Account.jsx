@@ -1,5 +1,5 @@
 // src/pages/Account.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../App';
 
 export default function Account({ user, setUser, setCurrentPage }) {
@@ -104,9 +104,23 @@ export default function Account({ user, setUser, setCurrentPage }) {
 
 // ---- ОБЗОР (RBAC-панель) ----
 function ProfileOverview({ user, has, setCurrentPage }) {
+  const hasAnyAction =
+    has('create_role_type') || has('delete_role_type') || has('edit_role_permissions') ||
+    has('create_account') || has('delete_account') || has('edit_account_variables') ||
+    has('create_hotel') || has('delete_hotel') || has('create_room') || has('delete_room') ||
+    has('pay_booking') || has('refund_payment') || has('view_personal_data') ||
+    has('moderate_reviews') || has('view_directories');
+
   return (
     <div className="rbac-actions-section">
       <h3 className="actions-section-title">Доступные операции</h3>
+
+      {!hasAnyAction && (
+        <p style={{ textAlign: 'center' }}>
+          Для вашей роли «{user.roleName}» дополнительные операции в данный момент не предусмотрены.
+        </p>
+      )}
+
       <div className="actions-dashboard-grid">
 
         {(has('create_role_type') || has('delete_role_type') || has('edit_role_permissions')) && (
@@ -189,7 +203,7 @@ function HotelsManagement({ has }) {
   useEffect(() => {
     fetch(`${API_BASE}/hotels/search`, { credentials: 'include' })
       .then(r => r.json())
-      .then(d => setHotels(d))
+      .then(d => setHotels(Array.isArray(d) ? d : []))
       .finally(() => setLoading(false));
   }, []);
 

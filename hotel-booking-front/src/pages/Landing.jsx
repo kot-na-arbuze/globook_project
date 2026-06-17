@@ -8,7 +8,7 @@ export default function Landing({ setCurrentPage, openBooking, user }) {
   useEffect(() => {
     fetch(`${API_BASE}/hotels/search`, { credentials: 'include' })
       .then(r => r.json())
-      .then(data => setFeaturedHotels(data.slice(0, 3)))
+      .then(data => setFeaturedHotels(Array.isArray(data) ? data.slice(0, 3) : []))
       .catch(() => {});
   }, []);
 
@@ -25,7 +25,7 @@ export default function Landing({ setCurrentPage, openBooking, user }) {
             <span className="hero-accent">отель за 30 секунд</span>
           </h1>
           <p className="hero-subtitle">
-            Более {featuredHotels.length > 0 ? '6' : '...'} отелей по всей России. Мгновенное подтверждение, честные цены.
+            Десятки отелей по всей России. Мгновенное подтверждение, честные цены.
           </p>
           <div className="hero-cta-row">
             <button className="btn btn-hero-primary" onClick={() => setCurrentPage('search')}>
@@ -74,7 +74,7 @@ export default function Landing({ setCurrentPage, openBooking, user }) {
               <div key={hotel.id} className="featured-hotel-card" onClick={() => setCurrentPage('hotel', hotel)}>
                 <div className="featured-card-img-wrapper">
                   <img src={hotel.photo} alt={hotel.name} />
-                  <div className="featured-card-rating">⭐ {hotel.rating.toFixed(1)}</div>
+                  <div className="featured-card-rating">⭐ {hotel.rating?.toFixed(1)}</div>
                 </div>
                 <div className="featured-card-body">
                   <h3>{hotel.name}</h3>
@@ -105,11 +105,9 @@ export default function Landing({ setCurrentPage, openBooking, user }) {
           <p>Зарегистрируйтесь и получите доступ к эксклюзивным ценам</p>
           <div className="cta-banner-btns">
             {!user ? (
-              <>
-                <button className="btn btn-hero-primary" onClick={() => setCurrentPage('search')}>
-                  Найти отель
-                </button>
-              </>
+              <button className="btn btn-hero-primary" onClick={() => setCurrentPage('search')}>
+                Найти отель
+              </button>
             ) : (
               <button className="btn btn-hero-primary" onClick={() => setCurrentPage('search')}>
                 Начать поиск
